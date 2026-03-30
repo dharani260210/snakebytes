@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SnakeBytes — Master Python</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0d0d14;
+    --surface:#16161f;
+    --card:#1d1d2b;
+    --border:#2a2a3d;
+    --accent:#f7c948;
+    --accent2:#5e8eff;
+    --accent3:#3fd87f;
+    --text:#f0effe;
+    --muted:#7b7a99;
+    --font-body:'DM Sans',sans-serif;
+    --font-code:'Space Mono',monospace;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.6;overflow-x:hidden}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:100;background:rgba(13,13,20,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px}
+  .nav-logo{font-family:var(--font-code);font-size:1.1rem;color:var(--accent);letter-spacing:-.02em;cursor:pointer}
+  .nav-logo span{color:var(--text)}
+  .nav-links{display:flex;gap:1.5rem}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;font-weight:500;cursor:pointer;transition:color .2s}
+  .nav-links a:hover{color:var(--text)}
+  .nav-cta{background:var(--accent);color:#111;padding:.45rem 1.1rem;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;border:none;font-family:var(--font-body);transition:transform .15s,opacity .15s}
+  .nav-cta:hover{opacity:.9;transform:translateY(-1px)}
+
+  /* HERO */
+  .hero{min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(94,142,255,.13) 0%,transparent 70%);pointer-events:none}
+  .hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(247,201,72,.1);border:1px solid rgba(247,201,72,.25);color:var(--accent);padding:.35rem 1rem;border-radius:100px;font-size:.8rem;font-weight:600;margin-bottom:2rem;letter-spacing:.05em}
+  .hero-badge .dot{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .hero h1{font-size:clamp(2.5rem,7vw,5rem);font-weight:700;line-height:1.1;letter-spacing:-.03em;margin-bottom:1.25rem;max-width:800px}
+  .hero h1 em{color:var(--accent);font-style:normal}
+  .hero p{color:var(--muted);font-size:1.15rem;max-width:520px;margin:0 auto 2.5rem;font-weight:400}
+  .hero-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+  .btn-primary{background:var(--accent);color:#111;padding:.75rem 2rem;border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;border:none;font-family:var(--font-body);transition:all .2s}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(247,201,72,.3)}
+  .btn-secondary{background:transparent;color:var(--text);padding:.75rem 2rem;border-radius:10px;font-weight:500;font-size:.95rem;cursor:pointer;border:1px solid var(--border);font-family:var(--font-body);transition:all .2s}
+  .btn-secondary:hover{border-color:var(--muted);background:var(--surface)}
+  .hero-code{margin-top:4rem;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem 2rem;font-family:var(--font-code);font-size:.85rem;text-align:left;max-width:480px;width:100%;position:relative}
+  .hero-code::before{content:'● ● ●';position:absolute;top:12px;left:16px;font-size:10px;color:var(--muted);letter-spacing:6px}
+  .hero-code pre{margin-top:1.2rem;color:#c9d1d9}
+  .hero-code .kw{color:#ff79c6}
+  .hero-code .fn{color:#50fa7b}
+  .hero-code .str{color:#f1fa8c}
+  .hero-code .num{color:#bd93f9}
+  .hero-code .cm{color:var(--muted)}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .stat{background:var(--bg);padding:2rem 1.5rem;text-align:center}
+  .stat-num{font-family:var(--font-code);font-size:2rem;font-weight:700;color:var(--accent)}
+  .stat-label{color:var(--muted);font-size:.85rem;margin-top:.25rem}
+
+  /* SECTIONS */
+  section{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+  .section-tag{display:inline-block;background:rgba(94,142,255,.1);color:var(--accent2);border:1px solid rgba(94,142,255,.2);padding:.3rem .9rem;border-radius:100px;font-size:.75rem;font-weight:600;letter-spacing:.07em;margin-bottom:1rem}
+  .section-title{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;letter-spacing:-.02em;margin-bottom:.75rem}
+  .section-sub{color:var(--muted);font-size:1rem;max-width:540px}
+
+  /* TOPICS GRID */
+  .topics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;margin-top:2.5rem}
+  .topic-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+  .topic-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(94,142,255,.04),transparent);opacity:0;transition:opacity .25s}
+  .topic-card:hover{border-color:var(--accent2);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.3)}
+  .topic-card:hover::after{opacity:1}
+  .topic-icon{font-size:1.8rem;margin-bottom:1rem}
+  .topic-card h3{font-size:1rem;font-weight:600;margin-bottom:.4rem}
+  .topic-card p{color:var(--muted);font-size:.85rem;line-height:1.5}
+  .topic-tag{display:inline-block;margin-top:.75rem;padding:.2rem .65rem;border-radius:100px;font-size:.72rem;font-weight:600}
+  .tag-beginner{background:rgba(63,216,127,.1);color:var(--accent3)}
+  .tag-intermediate{background:rgba(94,142,255,.1);color:var(--accent2)}
+  .tag-advanced{background:rgba(255,80,80,.1);color:#ff6b6b}
+
+  /* COMPILER */
+  #compiler-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2rem}
+  .compiler-wrap{max-width:1100px;margin:0 auto}
+  .compiler-header{margin-bottom:2rem}
+  .compiler-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start}
+  @media(max-width:768px){.compiler-layout{grid-template-columns:1fr}.nav-links{display:none}}
+  .editor-panel,.output-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+  .panel-head-left{display:flex;align-items:center;gap:.6rem;font-size:.82rem;font-weight:600;color:var(--muted)}
+  .panel-dot{width:10px;height:10px;border-radius:50%}
+  .pd-red{background:#ff5f57}
+  .pd-yellow{background:#febc2e}
+  .pd-green{background:#28c840}
+  .run-btn{background:var(--accent3);color:#0d200d;padding:.45rem 1.2rem;border-radius:8px;border:none;font-family:var(--font-body);font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.4rem;transition:all .2s}
+  .run-btn:hover{opacity:.85;transform:translateY(-1px)}
+  .run-btn:active{transform:scale(.97)}
+  .run-btn .play{display:inline-block;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #0d200d}
+  .clear-btn{background:transparent;color:var(--muted);padding:.45rem .9rem;border-radius:8px;border:1px solid var(--border);font-family:var(--font-body);font-size:.82rem;cursor:pointer;transition:all .2s}
+  .clear-btn:hover{color:var(--text);border-color:var(--muted)}
+  .CodeMirror{height:360px !important;font-family:var(--font-code) !important;font-size:13.5px !important;background:#1a1a28 !important;border:none !important}
+  .CodeMirror-scroll{padding:.75rem 0}
+  #output-area{min-height:360px;padding:1.25rem;font-family:var(--font-code);font-size:13px;line-height:1.7;color:#c9d1d9;white-space:pre-wrap;overflow-y:auto;max-height:360px}
+  #output-area .out-line{display:block}
+  #output-area .err-line{display:block;color:#ff7070}
+  #output-area .sys-line{display:block;color:var(--muted);font-style:italic}
+  .snippets-bar{display:flex;gap:.6rem;flex-wrap:wrap;padding:.75rem 1.25rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.15)}
+  .snippet-btn{background:rgba(94,142,255,.08);color:var(--accent2);border:1px solid rgba(94,142,255,.15);padding:.3rem .75rem;border-radius:6px;font-size:.75rem;cursor:pointer;font-family:var(--font-body);font-weight:500;transition:all .2s;white-space:nowrap}
+  .snippet-btn:hover{background:rgba(94,142,255,.15);border-color:rgba(94,142,255,.4)}
+
+  /* LESSONS */
+  .lessons-layout{display:grid;grid-template-columns:260px 1fr;gap:2rem;margin-top:2.5rem;align-items:start}
+  @media(max-width:860px){.lessons-layout{grid-template-columns:1fr}}
+  .lessons-sidebar{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:sticky;top:80px}
+  .lesson-item{padding:.85rem 1.25rem;cursor:pointer;border-bottom:1px solid var(--border);transition:background .2s;display:flex;align-items:center;gap:.75rem;font-size:.9rem}
+  .lesson-item:last-child{border-bottom:none}
+  .lesson-item:hover{background:var(--surface)}
+  .lesson-item.active{background:rgba(247,201,72,.07);border-left:3px solid var(--accent)}
+  .lesson-num{width:24px;height:24px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--muted);flex-shrink:0}
+  .lesson-item.active .lesson-num{background:var(--accent);color:#111}
+  .lesson-content{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem}
+  .lesson-content h2{font-size:1.5rem;font-weight:700;margin-bottom:.75rem;letter-spacing:-.01em}
+  .lesson-content p{color:var(--muted);margin-bottom:1rem;line-height:1.7}
+  .lesson-content ul{color:var(--muted);padding-left:1.5rem;margin-bottom:1rem}
+  .lesson-content li{margin-bottom:.4rem}
+  .code-block{background:#111118;border:1px solid var(--border);border-radius:10px;padding:1.25rem;font-family:var(--font-code);font-size:.82rem;line-height:1.6;margin:1rem 0;overflow-x:auto}
+  .code-block .kw{color:#ff79c6}
+  .code-block .fn{color:#50fa7b}
+  .code-block .str{color:#f1fa8c}
+  .code-block .num{color:#bd93f9}
+  .code-block .cm{color:#6272a4}
+  .code-block .bi{color:#8be9fd}
+  .try-btn{background:rgba(63,216,127,.1);color:var(--accent3);border:1px solid rgba(63,216,127,.2);padding:.5rem 1.25rem;border-radius:8px;font-family:var(--font-body);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:.5rem}
+  .try-btn:hover{background:rgba(63,216,127,.18)}
+  .next-btn{background:var(--accent2);color:#fff;border:none;padding:.65rem 1.5rem;border-radius:10px;font-family:var(--font-body);font-size:.9rem;font-weight:600;cursor:pointer;margin-top:1.5rem;transition:all .2s}
+  .next-btn:hover{opacity:.85;transform:translateY(-1px)}
+  .lesson-progress{display:flex;gap:.4rem;margin-top:1.5rem}
+  .prog-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s}
+  .prog-dot.done{background:var(--accent)}
+
+  /* QUIZ */
+  .quiz-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;margin-top:2.5rem}
+  .quiz-q{font-size:1.1rem;font-weight:600;margin-bottom:1.25rem}
+  .quiz-options{display:flex;flex-direction:column;gap:.65rem}
+  .quiz-opt{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.85rem 1.25rem;cursor:pointer;font-size:.9rem;transition:all .2s;text-align:left;font-family:var(--font-body);color:var(--text);width:100%}
+  .quiz-opt:hover{border-color:var(--accent2);background:rgba(94,142,255,.05)}
+  .quiz-opt.correct{border-color:var(--accent3);background:rgba(63,216,127,.08);color:var(--accent3)}
+  .quiz-opt.wrong{border-color:#ff6b6b;background:rgba(255,107,107,.08);color:#ff6b6b}
+  .quiz-feedback{margin-top:1rem;padding:.75rem 1rem;border-radius:8px;font-size:.9rem;display:none}
+  .quiz-next-btn{margin-top:1rem;background:var(--accent);color:#111;border:none;padding:.6rem 1.5rem;border-radius:8px;font-family:var(--font-body);font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s;display:none}
+  .quiz-next-btn:hover{opacity:.85}
+
+  /* FOOTER */
+  footer{background:var(--surface);border-top:1px solid var(--border);padding:2.5rem;text-align:center;color:var(--muted);font-size:.85rem}
+  footer strong{color:var(--accent);font-family:var(--font-code)}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav>
+  <div class="nav-logo" onclick="scrollTo(0,0)">snake<span>bytes</span></div>
+  <div class="nav-links">
+    <a onclick="document.getElementById('lessons-section').scrollIntoView({behavior:'smooth'})">Lessons</a>
+    <a onclick="document.getElementById('compiler-section').scrollIntoView({behavior:'smooth'})">Compiler</a>
+    <a onclick="document.getElementById('quiz-section').scrollIntoView({behavior:'smooth'})">Quiz</a>
+    <a onclick="document.getElementById('topics-section').scrollIntoView({behavior:'smooth'})">Topics</a>
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('compiler-section').scrollIntoView({behavior:'smooth'})">Try Compiler</button>
+</nav>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="hero-badge"><span class="dot"></span> Python 3 · 100% Free · No Sign-Up</div>
+  <h1>Learn <em>Python</em><br/>the modern way</h1>
+  <p>Interactive lessons, a live in-browser compiler, and bite-sized challenges — everything you need to go from zero to Pythonista.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="document.getElementById('lessons-section').scrollIntoView({behavior:'smooth'})">Start Learning →</button>
+    <button class="btn-secondary" onclick="document.getElementById('compiler-section').scrollIntoView({behavior:'smooth'})">Open Compiler</button>
+  </div>
+  <div class="hero-code">
+    <pre><span class="kw">def</span> <span class="fn">greet</span>(name):
+    <span class="cm"># Print a warm welcome</span>
+    message = <span class="str">f"Hello, {name}! 🐍"</span>
+    <span class="kw">return</span> message
+
+<span class="fn">print</span>(greet(<span class="str">"Pythonista"</span>))
+<span class="cm"># → Hello, Pythonista! 🐍</span></pre>
+  </div>
+</div>
+
+<!-- ===== STATS BAR ===== -->
+<div class="stats">
+  <div class="stat"><div class="stat-num">50+</div><div class="stat-label">Interactive Lessons</div></div>
+  <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Browser-Based</div></div>
+  <div class="stat"><div class="stat-num">0</div><div class="stat-label">Setup Required</div></div>
+  <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Free Forever</div></div>
+</div>
+
+<!-- ===== TOPICS ===== -->
+<section id="topics-section">
+  <div class="section-tag">CURRICULUM</div>
+  <div class="section-title">What you'll master</div>
+  <p class="section-sub">Structured from absolute beginner to advanced — covering the full Python ecosystem.</p>
+  <div class="topics-grid" id="topicsGrid"></div>
+</section>
+
+<!-- ===== LESSONS ===== -->
+<section id="lessons-section">
+  <div class="section-tag">LESSONS</div>
+  <div class="section-title">Interactive lessons</div>
+  <p class="section-sub">Read, understand, and immediately try every concept right in your browser.</p>
+  <div class="lessons-layout">
+    <div class="lessons-sidebar" id="lessonSidebar"></div>
+    <div class="lesson-content" id="lessonContent"></div>
+  </div>
+</section>
+
+<!-- ===== COMPILER ===== -->
+<div id="compiler-section">
+  <div class="compiler-wrap">
+    <div class="compiler-header">
+      <div class="section-tag">LIVE COMPILER</div>
+      <div class="section-title">Write &amp; run Python instantly</div>
+      <p class="section-sub">Powered by Skulpt — runs 100% in your browser, no server needed.</p>
+    </div>
+    <div class="compiler-layout">
+      <div class="editor-panel">
+        <div class="panel-head">
+          <div class="panel-head-left">
+            <span class="panel-dot pd-red"></span>
+            <span class="panel-dot pd-yellow"></span>
+            <span class="panel-dot pd-green"></span>
+            <span style="margin-left:.4rem">main.py</span>
+          </div>
+          <button class="run-btn" onclick="runCode()"><span class="play"></span> Run</button>
+        </div>
+        <div class="snippets-bar" id="snippetBar"></div>
+        <textarea id="code-editor"></textarea>
+      </div>
+      <div class="output-panel">
+        <div class="panel-head">
+          <div class="panel-head-left">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="5" stroke="#3fd87f" stroke-width="1.5"/>
+              <path d="M4 6l2 2 3-3" stroke="#3fd87f" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Output
+          </div>
+          <button class="clear-btn" onclick="clearOutput()">Clear</button>
+        </div>
+        <div id="output-area"><span class="sys-line">▷ Click "Run" to execute your code...</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<section id="quiz-section">
+  <div class="section-tag">QUIZ</div>
+  <div class="section-title">Test your knowledge</div>
+  <p class="section-sub">Quick challenges to reinforce what you've learned.</p>
+  <div class="quiz-card">
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-options" id="quizOptions"></div>
+    <div class="quiz-feedback" id="quizFeedback"></div>
+    <button class="quiz-next-btn" id="quizNextBtn" onclick="nextQuiz()">Next Question →</button>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>Built with ❤️ for learners everywhere · <strong>SnakeBytes</strong> · Python 3 in your browser</p>
+</footer>
+
+<script>
+/* ============================================================
+   TOPICS DATA
+============================================================ */
+const topics = [
+  {icon:"🐣", title:"Python Basics",       desc:"Variables, data types, operators, and your first program.",              level:"beginner"},
+  {icon:"🔀", title:"Control Flow",         desc:"if/elif/else, while loops, for loops, and break/continue.",             level:"beginner"},
+  {icon:"📦", title:"Functions",            desc:"def, parameters, return values, scope, and lambda.",                    level:"beginner"},
+  {icon:"📋", title:"Lists & Tuples",       desc:"Indexing, slicing, list methods, and comprehensions.",                  level:"beginner"},
+  {icon:"🗝️", title:"Dictionaries & Sets", desc:"Key-value pairs, set operations, and nested structures.",               level:"intermediate"},
+  {icon:"🏗️", title:"OOP",                 desc:"Classes, objects, inheritance, encapsulation, and polymorphism.",        level:"intermediate"},
+  {icon:"📁", title:"File Handling",        desc:"Read, write, and process text and CSV files.",                          level:"intermediate"},
+  {icon:"⚠️", title:"Error Handling",      desc:"try/except/finally, custom exceptions, and best practices.",            level:"intermediate"},
+  {icon:"🧩", title:"Modules & Packages",  desc:"import, standard library, pip, and virtual environments.",              level:"intermediate"},
+  {icon:"⚡", title:"Decorators",          desc:"First-class functions, closures, and decorator patterns.",              level:"advanced"},
+  {icon:"🔄", title:"Generators",          desc:"yield, lazy evaluation, and memory-efficient iteration.",               level:"advanced"},
+  {icon:"🧪", title:"Testing",             desc:"unittest, pytest, TDD, and mocking.",                                   level:"advanced"},
+];
+
+const topicsGrid = document.getElementById('topicsGrid');
+topics.forEach(t => {
+  const card = document.createElement('div');
+  card.className = 'topic-card';
+  card.innerHTML = `
+    <div class="topic-icon">${t.icon}</div>
+    <h3>${t.title}</h3>
+    <p>${t.desc}</p>
+    <span class="topic-tag tag-${t.level}">${t.level}</span>`;
+  card.onclick = () => document.getElementById('lessons-section').scrollIntoView({behavior:'smooth'});
+  topicsGrid.appendChild(card);
+});
+
+/* ============================================================
+   LESSONS DATA
+============================================================ */
+const lessons = [
+  {
+    title: "Hello, Python!",
+    content: `
+      <h2>Your First Python Program</h2>
+      <p>Python is a high-level, readable programming language used everywhere — from web apps to AI. Let's start with the classic first program.</p>
+      <div class="code-block"><span class="cm"># This is a comment</span>
+<span class="fn">print</span>(<span class="str">"Hello, World!"</span>)
+<span class="cm"># Output: Hello, World!</span></div>
+      <p>The <code style="background:var(--border);padding:.1rem .4rem;border-radius:4px;font-family:var(--font-code);font-size:.8rem">print()</code> function outputs text to the screen. Strings are wrapped in quotes.</p>
+      <button class="try-btn" onclick="loadSnippet('print(&quot;Hello, World!&quot;)\nprint(&quot;My name is Python&quot;)\nprint(1 + 2 + 3)')">▷ Try this in compiler</button>`
+  },
+  {
+    title: "Variables & Types",
+    content: `
+      <h2>Variables and Data Types</h2>
+      <p>Variables store data. Python is dynamically typed — you don't declare types explicitly.</p>
+      <div class="code-block"><span class="cm"># Integers</span>
+age = <span class="num">25</span>
+<span class="cm"># Floats</span>
+price = <span class="num">9.99</span>
+<span class="cm"># Strings</span>
+name = <span class="str">"Alice"</span>
+<span class="cm"># Booleans</span>
+active = <span class="bi">True</span>
+
+<span class="fn">print</span>(<span class="bi">type</span>(age))    <span class="cm"># &lt;class 'int'&gt;</span>
+<span class="fn">print</span>(<span class="bi">type</span>(name))   <span class="cm"># &lt;class 'str'&gt;</span></div>
+      <button class="try-btn" onclick="loadSnippet('age = 25\nprice = 9.99\nname = &quot;Alice&quot;\nactive = True\n\nprint(type(age))\nprint(type(name))\nprint(f&quot;Name: {name}, Age: {age}&quot;)')">▷ Try this in compiler</button>`
+  },
+  {
+    title: "If / Else",
+    content: `
+      <h2>Control Flow: if/elif/else</h2>
+      <p>Use conditional statements to make decisions in your code.</p>
+      <div class="code-block">score = <span class="num">75</span>
+
+<span class="kw">if</span> score >= <span class="num">90</span>:
+    <span class="fn">print</span>(<span class="str">"Grade: A"</span>)
+<span class="kw">elif</span> score >= <span class="num">70</span>:
+    <span class="fn">print</span>(<span class="str">"Grade: B"</span>)
+<span class="kw">elif</span> score >= <span class="num">60</span>:
+    <span class="fn">print</span>(<span class="str">"Grade: C"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">"Grade: F"</span>)</div>
+      <button class="try-btn" onclick="loadSnippet('score = 75\n\nif score >= 90:\n    print(&quot;Grade: A&quot;)\nelif score >= 70:\n    print(&quot;Grade: B&quot;)\nelif score >= 60:\n    print(&quot;Grade: C&quot;)\nelse:\n    print(&quot;Grade: F&quot;)')">▷ Try this in compiler</button>`
+  },
+  {
+    title: "Loops",
+    content: `
+      <h2>For Loops &amp; While Loops</h2>
+      <p>Loops let you repeat actions. <strong>for</strong> iterates over sequences; <strong>while</strong> runs while a condition is true.</p>
+      <div class="code-block"><span class="cm"># For loop</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="num">5</span>):
+    <span class="fn">print</span>(<span class="str">f"Count: {i}"</span>)
+
+<span class="cm"># While loop</span>
+n = <span class="num">1</span>
+<span class="kw">while</span> n <= <span class="num">4</span>:
+    <span class="fn">print</span>(n)
+    n += <span class="num">1</span></div>
+      <button class="try-btn" onclick="loadSnippet('for i in range(5):\n    print(f&quot;Count: {i}&quot;)\n\nprint(&quot;---&quot;)\n\nn = 1\nwhile n <= 4:\n    print(n)\n    n += 1')">▷ Try this in compiler</button>`
+  },
+  {
+    title: "Functions",
+    content: `
+      <h2>Defining Functions</h2>
+      <p>Functions let you organize and reuse code. Use <code style="background:var(--border);padding:.1rem .4rem;border-radius:4px;font-family:var(--font-code);font-size:.8rem">def</code> to define them.</p>
+      <div class="code-block"><span class="kw">def</span> <span class="fn">add</span>(a, b):
+    <span class="kw">return</span> a + b
+
+<span class="kw">def</span> <span class="fn">greet</span>(name=<span class="str">"World"</span>):
+    <span class="fn">print</span>(<span class="str">f"Hello, {name}!"</span>)
+
+<span class="fn">print</span>(<span class="fn">add</span>(<span class="num">3</span>, <span class="num">5</span>))   <span class="cm"># 8</span>
+<span class="fn">greet</span>()            <span class="cm"># Hello, World!</span>
+<span class="fn">greet</span>(<span class="str">"Alice"</span>)     <span class="cm"># Hello, Alice!</span></div>
+      <button class="try-btn" onclick="loadSnippet('def add(a, b):\n    return a + b\n\ndef greet(name=&quot;World&quot;):\n    print(f&quot;Hello, {name}!&quot;)\n\nprint(add(3, 5))\ngreet()\ngreet(&quot;Alice&quot;)')">▷ Try this in compiler</button>`
+  },
+  {
+    title: "Lists",
+    content: `
+      <h2>Lists &amp; List Comprehensions</h2>
+      <p>Lists store ordered collections. They're mutable and zero-indexed.</p>
+      <div class="code-block">fruits = [<span class="str">"apple"</span>, <span class="str">"banana"</span>, <span class="str">"cherry"</span>]
+<span class="fn">print</span>(fruits[<span class="num">0</span>])          <span class="cm"># apple</span>
+fruits.<span class="fn">append</span>(<span class="str">"date"</span>)
+<span class="fn">print</span>(<span class="bi">len</span>(fruits))         <span class="cm"># 4</span>
+
+<span class="cm"># List comprehension</span>
+squares = [x**<span class="num">2</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="bi">range</span>(<span class="num">6</span>)]
+<span class="fn">print</span>(squares) <span class="cm"># [0,1,4,9,16,25]</span></div>
+      <button class="try-btn" onclick="loadSnippet('fruits = [&quot;apple&quot;, &quot;banana&quot;, &quot;cherry&quot;]\nprint(fruits[0])\nfruits.append(&quot;date&quot;)\nprint(len(fruits))\nprint(fruits)\n\nsquares = [x**2 for x in range(6)]\nprint(squares)')">▷ Try this in compiler</button>`
+  },
+  {
+    title: "Dictionaries",
+    content: `
+      <h2>Dictionaries</h2>
+      <p>Dictionaries store key-value pairs — like a real dictionary where words map to definitions.</p>
+      <div class="code-block">person = {
+    <span class="str">"name"</span>: <span class="str">"Alice"</span>,
+    <span class="str">"age"</span>: <span class="num">30</span>,
+    <span class="str">"city"</span>: <span class="str">"Chennai"</span>
+}
+<span class="fn">print</span>(person[<span class="str">"name"</span>])     <span class="cm"># Alice</span>
+person[<span class="str">"job"</span>] = <span class="str">"Dev"</span>
+<span class="kw">for</span> key, val <span class="kw">in</span> person.<span class="fn">items</span>():
+    <span class="fn">print</span>(<span class="str">f"{key}: {val}"</span>)</div>
+      <button class="try-btn" onclick="loadSnippet('person = {&quot;name&quot;: &quot;Alice&quot;, &quot;age&quot;: 30, &quot;city&quot;: &quot;Chennai&quot;}\nprint(person[&quot;name&quot;])\nperson[&quot;job&quot;] = &quot;Developer&quot;\nfor key, val in person.items():\n    print(f&quot;{key}: {val}&quot;)')">▷ Try this in compiler</button>`
+  },
+  {
+    title: "OOP Basics",
+    content: `
+      <h2>Object-Oriented Programming</h2>
+      <p>Classes are blueprints for objects. They bundle data (attributes) and behaviour (methods).</p>
+      <div class="code-block"><span class="kw">class</span> <span class="fn">Dog</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="bi">self</span>, name, breed):
+        <span class="bi">self</span>.name = name
+        <span class="bi">self</span>.breed = breed
+
+    <span class="kw">def</span> <span class="fn">bark</span>(<span class="bi">self</span>):
+        <span class="fn">print</span>(<span class="str">f"{self.name} says: Woof!"</span>)
+
+dog = <span class="fn">Dog</span>(<span class="str">"Buddy"</span>, <span class="str">"Labrador"</span>)
+dog.<span class="fn">bark</span>()  <span class="cm"># Buddy says: Woof!</span></div>
+      <button class="try-btn" onclick="loadSnippet('class Dog:\n    def __init__(self, name, breed):\n        self.name = name\n        self.breed = breed\n\n    def bark(self):\n        print(f&quot;{self.name} says: Woof!&quot;)\n\ndog = Dog(&quot;Buddy&quot;, &quot;Labrador&quot;)\ndog.bark()\nprint(f&quot;Breed: {dog.breed}&quot;)')">▷ Try this in compiler</button>`
+  }
+];
+
+/* ============================================================
+   LESSON RENDERER
+============================================================ */
+let activeLessonIdx = 0;
+
+function renderSidebar() {
+  const sidebar = document.getElementById('lessonSidebar');
+  sidebar.innerHTML = '';
+  lessons.forEach((l, i) => {
+    const item = document.createElement('div');
+    item.className = 'lesson-item' + (i === activeLessonIdx ? ' active' : '');
+    item.innerHTML = `<div class="lesson-num">${i + 1}</div><span>${l.title}</span>`;
+    item.onclick = () => { activeLessonIdx = i; renderSidebar(); renderLesson(); };
+    sidebar.appendChild(item);
+  });
+}
+
+function renderLesson() {
+  const l = lessons[activeLessonIdx];
+  const dots = lessons.map((_, i) =>
+    `<div class="prog-dot${i <= activeLessonIdx ? ' done' : ''}"></div>`
+  ).join('');
+  document.getElementById('lessonContent').innerHTML =
+    l.content +
+    `<div class="lesson-progress">${dots}</div>` +
+    `<button class="next-btn" onclick="nextLesson()">Next Lesson →</button>`;
+}
+
+function nextLesson() {
+  if (activeLessonIdx < lessons.length - 1) {
+    activeLessonIdx++;
+    renderSidebar();
+    renderLesson();
+    document.getElementById('lessons-section').scrollIntoView({behavior:'smooth'});
+  }
+}
+
+renderSidebar();
+renderLesson();
+
+/* ============================================================
+   SNIPPETS
+============================================================ */
+const snippets = [
+  {
+    label: "Hello World",
+    code: 'print("Hello, World!")\nprint("Welcome to Python!")'
+  },
+  {
+    label: "Variables",
+    code: 'name = "Python"\nversion = 3.12\nprint(f"{name} {version} is awesome!")'
+  },
+  {
+    label: "Loop",
+    code: 'for i in range(1, 6):\n    print(f"Step {i}: " + "*" * i)'
+  },
+  {
+    label: "List comp",
+    code: 'squares = [x**2 for x in range(1, 11)]\nprint(squares)'
+  },
+  {
+    label: "Factorial",
+    code: 'def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n\nfor i in range(1, 8):\n    print(f"{i}! = {factorial(i)}")'
+  },
+  {
+    label: "FizzBuzz",
+    code: 'for n in range(1, 21):\n    if n % 15 == 0:\n        print("FizzBuzz")\n    elif n % 3 == 0:\n        print("Fizz")\n    elif n % 5 == 0:\n        print("Buzz")\n    else:\n        print(n)'
+  },
+  {
+    label: "Class",
+    code: 'class Animal:\n    def __init__(self, name):\n        self.name = name\n    def speak(self):\n        return f"{self.name} makes a sound"\n\nclass Cat(Animal):\n    def speak(self):\n        return f"{self.name} says: Meow!"\n\ncat = Cat("Luna")\nprint(cat.speak())'
+  },
+  {
+    label: "Dictionary",
+    code: 'inventory = {"apples": 5, "bananas": 3, "oranges": 8}\nfor item, qty in inventory.items():\n    print(f"{item}: {qty} units")\nprint(f"Total items: {sum(inventory.values())}")'
+  },
+];
+
+const snippetBar = document.getElementById('snippetBar');
+snippets.forEach(s => {
+  const btn = document.createElement('button');
+  btn.className = 'snippet-btn';
+  btn.textContent = s.label;
+  btn.onclick = () => { editor.setValue(s.code); editor.refresh(); };
+  snippetBar.appendChild(btn);
+});
+
+function loadSnippet(code) {
+  const decoded = code
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+  editor.setValue(decoded);
+  editor.refresh();
+  document.getElementById('compiler-section').scrollIntoView({behavior:'smooth'});
+}
+
+/* ============================================================
+   CODEMIRROR EDITOR
+============================================================ */
+const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+  mode: 'python',
+  theme: 'dracula',
+  lineNumbers: true,
+  indentWithTabs: false,
+  indentUnit: 4,
+  tabSize: 4,
+  extraKeys: {
+    "Tab": (cm) => cm.replaceSelection("    "),
+    "Ctrl-Enter": () => runCode(),
+    "Cmd-Enter":  () => runCode()
+  },
+  lineWrapping: false,
+  autofocus: false
+});
+
+editor.setValue(
+  '# Welcome to SnakeBytes Live Compiler!\n' +
+  '# Write Python below and press Run (or Ctrl+Enter)\n\n' +
+  'name = "Dharani"\n' +
+  'for i, ch in enumerate(name):\n' +
+  '    print(f"Letter {i+1}: {ch}")\n\n' +
+  'print(f"\\nHello, {name}! Happy coding! 🐍")'
+);
+
+/* ============================================================
+   SKULPT PYTHON RUNNER
+============================================================ */
+function runCode() {
+  const outputArea = document.getElementById('output-area');
+  outputArea.innerHTML = '<span class="sys-line">Running...</span>';
+
+  let outputBuffer = '';
+
+  Sk.configure({
+    output: function(text) {
+      outputBuffer += text;
+    },
+    read: function(x) {
+      if (
+        Sk.builtinFiles === undefined ||
+        Sk.builtinFiles["files"][x] === undefined
+      ) {
+        throw new Error("File not found: '" + x + "'");
+      }
+      return Sk.builtinFiles["files"][x];
+    },
+    __future__: Sk.python3
+  });
+
+  const code = editor.getValue();
+
+  Sk.misceval.asyncToPromise(() => {
+    return Sk.importMainWithBody("<stdin>", false, code, true);
+  }).then(() => {
+    outputArea.innerHTML = '';
+    if (outputBuffer.trim() === '') {
+      outputArea.innerHTML =
+        '<span class="sys-line">✓ Program ran successfully (no output)</span>';
+    } else {
+      const lines = outputBuffer.split('\n');
+      lines.forEach(line => {
+        if (line !== '') {
+          const span = document.createElement('span');
+          span.className = 'out-line';
+          span.textContent = line;
+          outputArea.appendChild(span);
+        }
+      });
+      const success = document.createElement('span');
+      success.className = 'sys-line';
+      success.textContent = '\n✓ Done';
+      outputArea.appendChild(success);
+    }
+    outputArea.scrollTop = outputArea.scrollHeight;
+  }).catch(err => {
+    outputArea.innerHTML = '';
+
+    // Print any output that happened before the error
+    if (outputBuffer) {
+      outputBuffer.split('\n').filter(l => l).forEach(line => {
+        const span = document.createElement('span');
+        span.className = 'out-line';
+        span.textContent = line;
+        outputArea.appendChild(span);
+      });
+    }
+
+    // Format the error message nicely
+    let msg = err.toString();
+    if (err.args && err.args.v && err.args.v[0] && err.args.v[0].v) {
+      msg = err.tp$name + ': ' + err.args.v[0].v;
+    }
+
+    const errSpan = document.createElement('span');
+    errSpan.className = 'err-line';
+    errSpan.textContent = '✗ ' + msg;
+    outputArea.appendChild(errSpan);
+    outputArea.scrollTop = outputArea.scrollHeight;
+  });
+}
+
+function clearOutput() {
+  document.getElementById('output-area').innerHTML =
+    '<span class="sys-line">▷ Click "Run" to execute your code...</span>';
+}
+
+/* ============================================================
+   QUIZ ENGINE
+============================================================ */
+const quizzes = [
+  {
+    q: "What does print('Hello') do in Python?",
+    opts: ["Stores 'Hello' in memory", "Displays 'Hello' on screen", "Creates a variable Hello", "Imports Hello module"],
+    ans: 1,
+    exp: "print() outputs text to the console/screen."
+  },
+  {
+    q: "Which of these correctly creates a list in Python?",
+    opts: ["list = (1,2,3)", "list = {1,2,3}", "list = [1,2,3]", "list = <1,2,3>"],
+    ans: 2,
+    exp: "Lists use square brackets []. Parentheses make tuples, curly braces make sets/dicts."
+  },
+  {
+    q: "What is the output of: print(2 ** 3)?",
+    opts: ["6", "9", "8", "5"],
+    ans: 2,
+    exp: "** is the exponentiation operator. 2³ = 8."
+  },
+  {
+    q: "Which keyword defines a function in Python?",
+    opts: ["func", "define", "function", "def"],
+    ans: 3,
+    exp: "'def' is used to define functions in Python."
+  },
+  {
+    q: "What does len([1, 2, 3, 4]) return?",
+    opts: ["3", "5", "4", "Error"],
+    ans: 2,
+    exp: "len() returns the number of items. [1,2,3,4] has 4 items."
+  },
+  {
+    q: "Which loop is best for iterating a known number of times?",
+    opts: ["while loop", "for loop", "do-while loop", "switch loop"],
+    ans: 1,
+    exp: "for loop with range() is ideal for a fixed number of iterations."
+  },
+  {
+    q: "How do you add a comment in Python?",
+    opts: ["// comment", "/* comment */", "-- comment", "# comment"],
+    ans: 3,
+    exp: "Python uses # for single-line comments."
+  },
+  {
+    q: "What type is the result of 7 / 2 in Python 3?",
+    opts: ["int (3)", "float (3.5)", "str (3.5)", "Error"],
+    ans: 1,
+    exp: "In Python 3, / always returns float. Use // for integer division."
+  },
+  {
+    q: "Which method adds an item to the end of a list?",
+    opts: ["list.add()", "list.push()", "list.append()", "list.insert()"],
+    ans: 2,
+    exp: "append() adds a single element to the end of a list."
+  },
+  {
+    q: "What is the correct syntax for a dictionary?",
+    opts: ['{"key": "value"}', '["key": "value"]', '("key", "value")', '"key" = "value"'],
+    ans: 0,
+    exp: "Dictionaries use curly braces {} with key: value pairs."
+  },
+];
+
+let quizIdx = 0;
+let answered = false;
+
+function renderQuiz() {
+  const q = quizzes[quizIdx % quizzes.length];
+  document.getElementById('quizQ').textContent =
+    `Q${(quizIdx % quizzes.length) + 1}. ${q.q}`;
+
+  const opts = document.getElementById('quizOptions');
+  opts.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = `${['A','B','C','D'][i]}. ${opt}`;
+    btn.onclick = () => checkAnswer(i, q.ans, q.exp);
+    opts.appendChild(btn);
+  });
+
+  const fb = document.getElementById('quizFeedback');
+  fb.style.display = 'none';
+  document.getElementById('quizNextBtn').style.display = 'none';
+  answered = false;
+}
+
+function checkAnswer(selected, correct, exp) {
+  if (answered) return;
+  answered = true;
+
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts[selected].classList.add(selected === correct ? 'correct' : 'wrong');
+  if (selected !== correct) opts[correct].classList.add('correct');
+  opts.forEach(o => o.style.pointerEvents = 'none');
+
+  const fb = document.getElementById('quizFeedback');
+  const isCorrect = selected === correct;
+  fb.style.cssText = `
+    display:block;
+    background:${isCorrect ? 'rgba(63,216,127,.08)' : 'rgba(255,107,107,.08)'};
+    color:${isCorrect ? 'var(--accent3)' : '#ff7070'};
+    border:1px solid ${isCorrect ? 'rgba(63,216,127,.2)' : 'rgba(255,107,107,.2)'};
+    border-radius:8px;
+    padding:.75rem 1rem;
+  `;
+  fb.textContent = (isCorrect ? '✓ Correct! ' : '✗ Not quite. ') + exp;
+  document.getElementById('quizNextBtn').style.display = 'inline-block';
+}
+
+function nextQuiz() {
+  quizIdx++;
+  renderQuiz();
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
